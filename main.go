@@ -49,7 +49,7 @@ func validatHeader(fileHeader string) (bool, error) {
 
 func validatComment(fileContents []string) (int, error) {
 	lineIndex := 1
-	for fileContents[lineIndex][0] == '#' {
+	for len(fileContents[lineIndex]) > 0 && fileContents[lineIndex][0] == '#' {
 		lineIndex++
 	}
 	if (lineIndex == 1) {
