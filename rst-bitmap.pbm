@@ -1,7 +1,7 @@
 P1
-# This is an bitmap of the letter "J" rotated 90 degrees clockwise
+# This is the bitmap of a letter rotated 90 degrees clockwise
 10 6
-1 0 0 1 0 0 0 0 0 1
+1 0 0 1 0 0 0 0 0 0
 0 0 1 0 0 0 0 0 1 1
 0 0 1 0 0 0 1 0 0 1
 0 0 1 0 0 0 1 0 0 1

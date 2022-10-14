@@ -61,7 +61,7 @@ func writeToFile(rstPixelsArr [][]byte) {
 
 	f.WriteString(header + "\n")
 
-	comment := fmt.Sprintln(`# This is an bitmap of the letter "J" rotated 90 degrees clockwise`)
+	comment := fmt.Sprintln(`# This is the bitmap of a letter rotated 90 degrees clockwise`)
 	f.WriteString(comment)
 
 	// write size
@@ -70,19 +70,23 @@ func writeToFile(rstPixelsArr [][]byte) {
 		log.Fatal(err)
 	}
 
+	writePixels(f, rstPixelsArr)
+	fmt.Println("done")
+}
+
+func writePixels(f *os.File, rstPixelsArr [][]byte) {
 	newline := byte(10)
 	emptySpace := byte(32)
+
 	for _, pixelsLine := range rstPixelsArr {
 		rstPixelsLine := []byte{}
 		for _, pixel := range pixelsLine {
 			rstPixelsLine = append(rstPixelsLine, pixel, emptySpace)
 		}
 		rstPixelsLine = rstPixelsLine[:len(rstPixelsLine)-1]
-		pixelsLine = append(rstPixelsLine, newline)
-		f.Write(pixelsLine)
+		rstPixelsLine = append(rstPixelsLine, newline)
+		f.Write(rstPixelsLine)
 	}
-
-	fmt.Println("done")
 }
 
 func initRstPixelsArr(height int, width int) [][]byte {
@@ -130,7 +134,7 @@ func fetchPBM(fileContents []string) (PBM, error) {
 		return PBM{}, errors.New("file pixels format is not correct")
 	}
 	pbm := PBM{wAndHArr[0], wAndHArr[1], pixels}
-	
+
 	return pbm, nil
 }
 
@@ -174,12 +178,12 @@ func getWAndH(lineSize string) []int {
 func compressPixels(fileContents []string, lineIndex int, wAndHArr []int) (string, bool) {
 	pixels := strings.Join(fileContents[lineIndex:], "")
 	pixels = strings.ReplaceAll(pixels, " ", "")
-	requiredPixelslen := wAndHArr[0] * wAndHArr[1]
+	requiredPixelsLen := wAndHArr[0] * wAndHArr[1]
 
-	pattern := fmt.Sprintf("^[0,1]{%d,}$", requiredPixelslen)
+	pattern := fmt.Sprintf("^[0,1]{%d,}$", requiredPixelsLen)
 	match, _ := regexp.MatchString(pattern, pixels)
 	if match {
-		pixels = pixels[0:requiredPixelslen]
+		pixels = pixels[0:requiredPixelsLen]
 	}
 
 	return pixels, match
@@ -206,7 +210,7 @@ func fetchFileContents(oriFileName string) []string {
 
 func main() {
 	var oriFileName string
-	flag.StringVar(&oriFileName, "fileName", "bitmap.pbm", "generated pbm image file name")
+	flag.StringVar(&oriFileName, "oriFileName", "bitmap.pbm", "generated pbm image file name")
 	flag.Parse()
 	var fileContents = fetchFileContents(oriFileName)
 	process(fileContents)
