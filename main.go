@@ -4,39 +4,42 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
-func process() {
-	// var fileContents = fetchFileContents()
-	// var bitmap [][]int
-
+func process(fileContents []string) {
+	fileDataStr, err := validateFile(fileContents)
+	if err != nil {
+		log.Panicf("Error: %s", err.Error())
+	}
+	fmt.Println(fileDataStr)
 }
 
-func validateFile(fileContents []string) (bool, error) {
+func validateFile(fileContents []string) (string, error) {
 	var isValid bool
 	isValid, err := validatHeader(fileContents[0])
 	if !isValid {
-		return false, err
+		return "", err
 	}
 	lineIndex, err := validatComment(fileContents)
 	if err != nil {
-		return false, err
+		return "", err
 	}
 	isValid = validatSize(fileContents[lineIndex])
 	if !isValid {
-		return false, errors.New("file size is not correct")
+		return "", errors.New("file size is not correct")
 	}
 	wAndHArr := getWAndH(fileContents[lineIndex])
 	lineIndex++
-	isValid = validatData(fileContents, lineIndex, wAndHArr)
+	fileDataStr, isValid := validatData(fileContents, lineIndex, wAndHArr)
 	if !isValid {
-		return false, errors.New("file data is not correct")
+		return "", errors.New("file data is not correct")
 	}
-	return true, nil
+	return fileDataStr, nil
 }
 
 func validatHeader(fileHeader string) (bool, error) {
@@ -52,10 +55,10 @@ func validatComment(fileContents []string) (int, error) {
 	for len(fileContents[lineIndex]) > 0 && fileContents[lineIndex][0] == '#' {
 		lineIndex++
 	}
-	if (lineIndex == 1) {
+	if lineIndex == 1 {
 		return lineIndex, errors.New("not comment in the file")
 	}
-	
+
 	return lineIndex, nil
 }
 
@@ -77,26 +80,18 @@ func getWAndH(lineSize string) []int {
 	return wAndH
 }
 
-func validatData(fileContents []string, lineIndex int, wAndHArr []int) bool {
-	width := wAndHArr[0]
-	height := wAndHArr[1]
+func validatData(fileContents []string, lineIndex int, wAndHArr []int) (string, bool) {
+	fileDataStr := strings.Join(fileContents[lineIndex:], "")
+	fileDataStr = strings.ReplaceAll(fileDataStr, " ", "")
+	requiredDatalen := wAndHArr[0] * wAndHArr[1]
 	
-	if len(fileContents[lineIndex:]) < height {
-		return false
+	pattern := fmt.Sprintf("^[0,1]{%d,}$", requiredDatalen)
+	match, _ := regexp.MatchString(pattern, fileDataStr)
+	if match {
+		fileDataStr = fileDataStr[0:requiredDatalen]
 	}
 
-	for i, line := range fileContents[lineIndex:] {
-		pattern := fmt.Sprintf("^([0,1]\\s){%d}[0,1]$", width-1)
-		match, _ := regexp.MatchString(pattern, line)
-		if !match {
-			return false
-		}
-		if i + 1 == height {
-			break
-		} 
-	}
-
-	return true
+	return fileDataStr, match
 }
 
 func fetchFileContents() []string {
@@ -121,6 +116,6 @@ func fetchFileContents() []string {
 
 func main() {
 	var fileContents = fetchFileContents()
-	isValid, err := validateFile(fileContents)
-	fmt.Println(isValid, err)
+	process(fileContents)
+
 }
