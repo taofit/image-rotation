@@ -1,217 +1,201 @@
 package main
 
 import (
-	"bufio"
-	"errors"
 	"flag"
-	"fmt"
-	"log"
-	"os"
-	"regexp"
-	"strconv"
-	"strings"
+	"image-rotate/rotation"
 )
 
-type PBM struct {
-	width  int
-	height int
-	Pixels string
-}
+// func process(fileContents []string) {
+// 	pbm, err := fetchPBM(fileContents)
+// 	if err != nil {
+// 		log.Panicf("Error: %s", err.Error())
+// 	}
+// 	// fmt.Println(pbm)
+// 	rstPixelsArr := rotate(pbm)
+// 	writeToFile(rstPixelsArr)
+// }
 
-var header = "P1"
+// func rotate(pbm PBM) [][]byte {
+// 	oriPixelsArr := fetchPixelsArr(pbm)
+// 	width := pbm.width
+// 	height := pbm.height
+// 	rstPixelsArr := initRstPixelsArr(width, height)
+// 	for y := 0; y < height; y++ {
+// 		for x := 0; x < width; x++ {
+// 			rstXInx := height - y - 1
+// 			rstYInx := x
+// 			rstPixelsArr[rstYInx][rstXInx] = oriPixelsArr[y][x]
+// 		}
+// 	}
 
-func process(fileContents []string) {
-	pbm, err := fetchPBM(fileContents)
-	if err != nil {
-		log.Panicf("Error: %s", err.Error())
-	}
-	// fmt.Println(pbm)
-	rstPixelsArr := rotate(pbm)
-	writeToFile(rstPixelsArr)
-}
+// 	for _, line := range rstPixelsArr {
+// 		fmt.Println(string(line))
+// 	}
 
-func rotate(pbm PBM) [][]byte {
-	oriPixelsArr := fetchPixelsArr(pbm)
-	width := pbm.width
-	height := pbm.height
-	rstPixelsArr := initRstPixelsArr(width, height)
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
-			rstXInx := height - y - 1
-			rstYInx := x
-			rstPixelsArr[rstYInx][rstXInx] = oriPixelsArr[y][x]
-		}
-	}
+// 	return rstPixelsArr
+// }
 
-	for _, line := range rstPixelsArr {
-		fmt.Println(string(line))
-	}
+// func writeToFile(rstPixelsArr [][]byte) {
+// 	f, err := os.Create("rst-bitmap.pbm")
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	defer f.Close()
+// 	width := len(rstPixelsArr[0])
+// 	height := len(rstPixelsArr)
 
-	return rstPixelsArr
-}
+// 	f.WriteString(header + "\n")
 
-func writeToFile(rstPixelsArr [][]byte) {
-	f, err := os.Create("rst-bitmap.pbm")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-	width := len(rstPixelsArr[0])
-	height := len(rstPixelsArr)
+// 	comment := fmt.Sprintln(`# This is the bitmap of a letter rotated 90 degrees clockwise`)
+// 	f.WriteString(comment)
 
-	f.WriteString(header + "\n")
+// 	// write size
+// 	_, err = f.WriteString(fmt.Sprintf("%d %d\n", width, height))
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	comment := fmt.Sprintln(`# This is the bitmap of a letter rotated 90 degrees clockwise`)
-	f.WriteString(comment)
+// 	writePixels(f, rstPixelsArr)
+// 	fmt.Println("done")
+// }
 
-	// write size
-	_, err = f.WriteString(fmt.Sprintf("%d %d\n", width, height))
-	if err != nil {
-		log.Fatal(err)
-	}
+// func writePixels(f *os.File, rstPixelsArr [][]byte) {
+// 	newline := byte(10)
+// 	emptySpace := byte(32)
 
-	writePixels(f, rstPixelsArr)
-	fmt.Println("done")
-}
+// 	for _, pixelsLine := range rstPixelsArr {
+// 		rstPixelsLine := []byte{}
+// 		for _, pixel := range pixelsLine {
+// 			rstPixelsLine = append(rstPixelsLine, pixel, emptySpace)
+// 		}
+// 		rstPixelsLine = rstPixelsLine[:len(rstPixelsLine)-1]
+// 		rstPixelsLine = append(rstPixelsLine, newline)
+// 		f.Write(rstPixelsLine)
+// 	}
+// }
 
-func writePixels(f *os.File, rstPixelsArr [][]byte) {
-	newline := byte(10)
-	emptySpace := byte(32)
+// func initRstPixelsArr(height int, width int) [][]byte {
+// 	rstPixelsArr := make([][]byte, height)
+// 	for i := 0; i < height; i++ {
+// 		rstPixelsArr[i] = make([]byte, width)
+// 	}
+// 	return rstPixelsArr
+// }
 
-	for _, pixelsLine := range rstPixelsArr {
-		rstPixelsLine := []byte{}
-		for _, pixel := range pixelsLine {
-			rstPixelsLine = append(rstPixelsLine, pixel, emptySpace)
-		}
-		rstPixelsLine = rstPixelsLine[:len(rstPixelsLine)-1]
-		rstPixelsLine = append(rstPixelsLine, newline)
-		f.Write(rstPixelsLine)
-	}
-}
+// func fetchPixelsArr(pbm PBM) (pixelsArr [][]byte) {
+// 	width := pbm.width
+// 	height := pbm.height
+// 	pixels := []byte(pbm.Pixels)
 
-func initRstPixelsArr(height int, width int) [][]byte {
-	rstPixelsArr := make([][]byte, height)
-	for i := 0; i < height; i++ {
-		rstPixelsArr[i] = make([]byte, width)
-	}
-	return rstPixelsArr
-}
+// 	for y := 0; y < height; y++ {
+// 		pixelLineArr := []byte{}
+// 		for x := 0; x < width; x++ {
+// 			tempX := y*width + x
+// 			pixelLineArr = append(pixelLineArr, pixels[tempX:tempX+1]...)
+// 		}
+// 		pixelsArr = append(pixelsArr, pixelLineArr)
+// 	}
+// 	return
+// }
 
-func fetchPixelsArr(pbm PBM) (pixelsArr [][]byte) {
-	width := pbm.width
-	height := pbm.height
-	pixels := []byte(pbm.Pixels)
+// func fetchPBM(fileContents []string) (PBM, error) {
+// 	var isValid bool
+// 	isValid, err := validatHeader(fileContents[0])
+// 	if !isValid {
+// 		return PBM{}, err
+// 	}
+// 	lineIndex, err := validatComment(fileContents)
+// 	if err != nil {
+// 		return PBM{}, err
+// 	}
+// 	isValid = validatSize(fileContents[lineIndex])
+// 	if !isValid {
+// 		return PBM{}, errors.New("file size is not correct")
+// 	}
+// 	wAndHArr := getWAndH(fileContents[lineIndex])
+// 	lineIndex++
+// 	pixels, succeed := compressPixels(fileContents, lineIndex, wAndHArr)
+// 	if !succeed {
+// 		return PBM{}, errors.New("file pixels format is not correct")
+// 	}
+// 	pbm := PBM{wAndHArr[0], wAndHArr[1], pixels}
 
-	for y := 0; y < height; y++ {
-		pixelLineArr := []byte{}
-		for x := 0; x < width; x++ {
-			tempX := y*width + x
-			pixelLineArr = append(pixelLineArr, pixels[tempX:tempX+1]...)
-		}
-		pixelsArr = append(pixelsArr, pixelLineArr)
-	}
-	return
-}
+// 	return pbm, nil
+// }
 
-func fetchPBM(fileContents []string) (PBM, error) {
-	var isValid bool
-	isValid, err := validatHeader(fileContents[0])
-	if !isValid {
-		return PBM{}, err
-	}
-	lineIndex, err := validatComment(fileContents)
-	if err != nil {
-		return PBM{}, err
-	}
-	isValid = validatSize(fileContents[lineIndex])
-	if !isValid {
-		return PBM{}, errors.New("file size is not correct")
-	}
-	wAndHArr := getWAndH(fileContents[lineIndex])
-	lineIndex++
-	pixels, succeed := compressPixels(fileContents, lineIndex, wAndHArr)
-	if !succeed {
-		return PBM{}, errors.New("file pixels format is not correct")
-	}
-	pbm := PBM{wAndHArr[0], wAndHArr[1], pixels}
+// func validatHeader(fileHeader string) (bool, error) {
+// 	if fileHeader != header {
+// 		return false, errors.New("file header is not correct")
+// 	}
+// 	return true, nil
+// }
 
-	return pbm, nil
-}
+// func validatComment(fileContents []string) (int, error) {
+// 	lineIndex := 1
+// 	for len(fileContents[lineIndex]) > 0 && fileContents[lineIndex][0] == '#' {
+// 		lineIndex++
+// 	}
+// 	if lineIndex == 1 {
+// 		return lineIndex, errors.New("not comment in the file")
+// 	}
 
-func validatHeader(fileHeader string) (bool, error) {
-	if fileHeader != header {
-		return false, errors.New("file header is not correct")
-	}
-	return true, nil
-}
+// 	return lineIndex, nil
+// }
 
-func validatComment(fileContents []string) (int, error) {
-	lineIndex := 1
-	for len(fileContents[lineIndex]) > 0 && fileContents[lineIndex][0] == '#' {
-		lineIndex++
-	}
-	if lineIndex == 1 {
-		return lineIndex, errors.New("not comment in the file")
-	}
+// func validatSize(size string) bool {
+// 	match, _ := regexp.MatchString(`^[1-9][0-9]*\s{1,}[1-9][0-9]*$`, size)
 
-	return lineIndex, nil
-}
+// 	return match
+// }
 
-func validatSize(size string) bool {
-	match, _ := regexp.MatchString(`^[1-9][0-9]*\s{1,}[1-9][0-9]*$`, size)
+// func getWAndH(lineSize string) []int {
+// 	var wAndH []int
+// 	sizeArr := strings.Fields(lineSize)
 
-	return match
-}
+// 	for _, number := range sizeArr {
+// 		aSNumber, _ := strconv.Atoi(number)
+// 		wAndH = append(wAndH, aSNumber)
+// 	}
 
-func getWAndH(lineSize string) []int {
-	var wAndH []int
-	sizeArr := strings.Fields(lineSize)
+// 	return wAndH
+// }
 
-	for _, number := range sizeArr {
-		aSNumber, _ := strconv.Atoi(number)
-		wAndH = append(wAndH, aSNumber)
-	}
+// func compressPixels(fileContents []string, lineIndex int, wAndHArr []int) (string, bool) {
+// 	pixels := strings.Join(fileContents[lineIndex:], "")
+// 	pixels = strings.ReplaceAll(pixels, " ", "")
+// 	requiredPixelsLen := wAndHArr[0] * wAndHArr[1]
 
-	return wAndH
-}
+// 	pattern := fmt.Sprintf("^[0,1]{%d,}$", requiredPixelsLen)
+// 	match, _ := regexp.MatchString(pattern, pixels)
+// 	if match {
+// 		pixels = pixels[0:requiredPixelsLen]
+// 	}
 
-func compressPixels(fileContents []string, lineIndex int, wAndHArr []int) (string, bool) {
-	pixels := strings.Join(fileContents[lineIndex:], "")
-	pixels = strings.ReplaceAll(pixels, " ", "")
-	requiredPixelsLen := wAndHArr[0] * wAndHArr[1]
+// 	return pixels, match
+// }
 
-	pattern := fmt.Sprintf("^[0,1]{%d,}$", requiredPixelsLen)
-	match, _ := regexp.MatchString(pattern, pixels)
-	if match {
-		pixels = pixels[0:requiredPixelsLen]
-	}
+// func fetchFileContents(oriFileName string) []string {
+// 	readFile, err := os.Open(oriFileName)
 
-	return pixels, match
-}
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	fileScanner := bufio.NewScanner(readFile)
+// 	fileScanner.Split(bufio.ScanLines)
+// 	var filelines []string
 
-func fetchFileContents(oriFileName string) []string {
-	readFile, err := os.Open(oriFileName)
+// 	for fileScanner.Scan() {
+// 		line := strings.Trim(fileScanner.Text(), " ")
+// 		filelines = append(filelines, line)
+// 	}
+// 	readFile.Close()
 
-	if err != nil {
-		log.Fatal(err)
-	}
-	fileScanner := bufio.NewScanner(readFile)
-	fileScanner.Split(bufio.ScanLines)
-	var filelines []string
-
-	for fileScanner.Scan() {
-		line := strings.Trim(fileScanner.Text(), " ")
-		filelines = append(filelines, line)
-	}
-	readFile.Close()
-
-	return filelines
-}
+// 	return filelines
+// }
 
 func main() {
 	var oriFileName string
 	flag.StringVar(&oriFileName, "oriFileName", "bitmap.pbm", "generated pbm image file name")
 	flag.Parse()
-	var fileContents = fetchFileContents(oriFileName)
-	process(fileContents)
+	rotation.Process(oriFileName)
 }
