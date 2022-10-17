@@ -22,30 +22,31 @@ func Process(oriFileName string) {
 		log.Panicf("Error: %s", err.Error())
 	}
 	// fmt.Println(pbm)
-	rstPixelsArr := rotate(pbm, 60)
+	rstPixelsArr := rotate(pbm, -45)
 	writeToFile(rstPixelsArr)
 }
 
-func rotate(pbm PBM, angle float32) [][]byte {
+func rotate(pbm PBM, angle float64) [][]byte {
 	oriPixelsArr := fetchOriPixelsArr(pbm)
 	oriWidth := pbm.width
 	oriHeight := pbm.height
-	rstWidth, rstHeight, minX, minY, maxX, maxY := getRstPixelsSize(angle, oriWidth, oriHeight)
+	sine := getSine(angle)
+	cosine := getCosine(angle)
+
+	rstWidth, rstHeight, minX, minY, maxX, maxY := getRstPixelsSize(sine, cosine, oriWidth, oriHeight)
 
 	fmt.Println(rstWidth, rstHeight, minX, minY, maxX, maxY)
 	rstPixelsArr := initRstPixelsArr(rstHeight, rstWidth)
 
-	for y := 0; y < int(rstHeight); y++ {
-		for x := 0; x < int(rstWidth); x++ {
-
-		}
-	}
-
-	for y := 0; y < oriHeight; y++ {
-		for x := 0; x < oriWidth; x++ {
-			rstXInx := oriHeight - y - 1
-			rstYInx := x
-			rstPixelsArr[rstYInx][rstXInx] = oriPixelsArr[y][x]
+	for x := 0; x < rstHeight; x++ {
+		for y := 0; y < rstWidth; y++ {
+			oriX := int(((float64(x) + minX) * cosine) + ((float64(y) + minY) * sine))
+			oriY := int(((float64(y) + minY) * cosine) - ((float64(x) + minX) * sine))
+			if (oriX >= 0 && oriX < oriHeight) && (oriY >= 0 && oriY < oriWidth) {
+				fmt.Println(oriX, oriY)
+				fmt.Println(oriPixelsArr[oriX][oriY])
+				rstPixelsArr[x][y] = oriPixelsArr[oriX][oriY]
+			}
 		}
 	}
 
@@ -56,40 +57,37 @@ func rotate(pbm PBM, angle float32) [][]byte {
 	return rstPixelsArr
 }
 
-func getRstPixelsSize(angle float32, oriWidth int, oriHeight int) (int32, int32, float32, float32, float32, float32) {
-	sine := getSine(angle)
-	cosine := getCosine(angle)
-
-	p1x := float32(oriWidth) * cosine
-	p1y := -float32(oriWidth) * sine
-	p2x := (float32(oriHeight) * sine) + (float32(oriWidth) * cosine)
-	p2y := (float32(oriHeight) * cosine) - (float32(oriWidth) * sine)
-	p3x := float32(oriHeight) * sine
-	p3y := float32(oriHeight) * cosine
+func getRstPixelsSize(sine, cosine float64, oriWidth, oriHeight int) (int, int, float64, float64, float64, float64) {
+	p1x := -float64(oriWidth) * sine
+	p1y := float64(oriWidth) * cosine
+	p2x := (float64(oriHeight) * cosine) - (float64(oriWidth) * sine)
+	p2y := (float64(oriHeight) * sine) + (float64(oriWidth) * cosine)
+	p3x := float64(oriHeight) * cosine
+	p3y := float64(oriHeight) * sine
 	// fmt.Println(oriWidth, oriHeight, p1x, p1y, p2x, p2y, p3x, p3y)
-	minX := min(0, min(p3x, min(p1x, p2x)))
-	minY := min(0, min(p3y, min(p1y, p2y)))
-	maxX := max(p3x, max(p1x, p2x))
-	maxY := max(p3y, max(p1y, p2y))
+	minX := math.Min(0, math.Min(p3x, math.Min(p1x, p2x)))
+	minY := math.Min(0, math.Min(p3y, math.Min(p1y, p2y)))
+	maxX := math.Max(p3x, math.Max(p1x, p2x))
+	maxY := math.Max(p3y, math.Max(p1y, p2y))
 
-	rstWidth := int32(math.Ceil(float64(maxX - minX)))
-	rstHeight := int32(math.Ceil(float64(maxY - minY)))
+	rstHeight := int(math.Ceil(maxX - minX))
+	rstWidth := int(math.Ceil(maxY - minY))
 
 	return rstWidth, rstHeight, minX, minY, maxX, maxY
 }
 
-func getSine(angle float32) float32 {
+func getSine(angle float64) float64 {
 	// TODO
-	radian := degreeToRadian((angle))
-	return float32(math.Sin(float64(radian)))
+	radian := degreeToRadian(angle)
+	return math.Sin(radian)
 }
 
-func getCosine(angle float32) float32 {
-	radian := degreeToRadian((angle))
-	return float32(math.Cos(float64(radian)))
+func getCosine(angle float64) float64 {
+	radian := degreeToRadian(angle)
+	return math.Cos(radian)
 }
 
-func degreeToRadian(angle float32) float32 {
+func degreeToRadian(angle float64) float64 {
 	return angle * (math.Pi / 180)
 }
 
@@ -108,10 +106,13 @@ func writePixels(f *os.File, rstPixelsArr [][]byte) {
 	}
 }
 
-func initRstPixelsArr(height int32, width int32) [][]byte {
+func initRstPixelsArr(height int, width int) [][]byte {
 	rstPixelsArr := make([][]byte, height)
 	for i := 0; i < int(height); i++ {
 		rstPixelsArr[i] = make([]byte, width)
+		for j := 0; j < int(width); j++ {
+			rstPixelsArr[i][j] = '0'
+		}
 	}
 	return rstPixelsArr
 }
@@ -130,18 +131,4 @@ func fetchOriPixelsArr(pbm PBM) (pixelsArr [][]byte) {
 		pixelsArr = append(pixelsArr, pixelLineArr)
 	}
 	return
-}
-
-func min(x, y float32) float32 {
-	if x < y {
-		return x
-	}
-	return y
-}
-
-func max(x, y float32) float32 {
-	if x > y {
-		return x
-	}
-	return y
 }

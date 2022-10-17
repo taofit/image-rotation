@@ -59,15 +59,15 @@ func validatSize(size string) bool {
 }
 
 func getWAndH(lineSize string) []int {
-	var wAndH []int
+	var wAndHArr []int
 	sizeArr := strings.Fields(lineSize)
 
 	for _, number := range sizeArr {
 		aSNumber, _ := strconv.Atoi(number)
-		wAndH = append(wAndH, aSNumber)
+		wAndHArr = append(wAndHArr, aSNumber)
 	}
 
-	return wAndH
+	return wAndHArr
 }
 
 func compressPixels(fileContents []string, lineIndex int, wAndHArr []int) (string, bool) {
