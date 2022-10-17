@@ -5,9 +5,14 @@ import (
 	"image-rotate/rotation"
 )
 
+var (
+	oriFileName string
+	angle       float64
+)
+
 func main() {
-	var oriFileName string
-	flag.StringVar(&oriFileName, "oriFileName", "bitmap.pbm", "generated pbm image file name")
+	flag.StringVar(&oriFileName, "fileName", "bitmap.pbm", "generated pbm image file name")
+	flag.Float64Var(&angle, "degree", 90, "the number of degrees to rotate")
 	flag.Parse()
-	rotation.Process(oriFileName)
+	rotation.Process(oriFileName, angle)
 }

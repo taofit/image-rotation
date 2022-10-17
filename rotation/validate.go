@@ -2,7 +2,6 @@ package rotation
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -75,11 +74,14 @@ func compressPixels(fileContents []string, lineIndex int, wAndHArr []int) (strin
 	pixels = strings.ReplaceAll(pixels, " ", "")
 	requiredPixelsLen := wAndHArr[0] * wAndHArr[1]
 
-	pattern := fmt.Sprintf("^[0,1]{%d,}$", requiredPixelsLen)
-	match, _ := regexp.MatchString(pattern, pixels)
-	if match {
-		pixels = pixels[0:requiredPixelsLen]
+	if len(pixels) < requiredPixelsLen {
+		return "", false
+	}
+	for _, c := range pixels {
+		if c != '0' && c != '1' {
+			return "", false
+		}
 	}
 
-	return pixels, match
+	return pixels, true
 }

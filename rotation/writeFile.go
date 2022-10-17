@@ -17,7 +17,7 @@ func writeToFile(rstPixelsArr [][]byte) {
 
 	f.WriteString(header + "\n")
 
-	comment := fmt.Sprintln(`# This is the bitmap of a letter rotated 90 degrees clockwise`)
+	comment := fmt.Sprintln(`# This is a rotated bitmap`)
 	f.WriteString(comment)
 
 	// write size
@@ -28,4 +28,19 @@ func writeToFile(rstPixelsArr [][]byte) {
 
 	writePixels(f, rstPixelsArr)
 	fmt.Println("done ....")
+}
+
+func writePixels(f *os.File, rstPixelsArr [][]byte) {
+	var newline byte = 10
+	var emptySpace byte = 32
+
+	for _, pixelsLine := range rstPixelsArr {
+		rstPixelsLine := []byte{}
+		for _, pixel := range pixelsLine {
+			rstPixelsLine = append(rstPixelsLine, pixel, emptySpace)
+		}
+		rstPixelsLine = rstPixelsLine[:len(rstPixelsLine)-1]
+		rstPixelsLine = append(rstPixelsLine, newline)
+		f.Write(rstPixelsLine)
+	}
 }
