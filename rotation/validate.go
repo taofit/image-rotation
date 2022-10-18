@@ -9,15 +9,15 @@ import (
 
 func fetchPBM(fileContents []string) (PBM, error) {
 	var isValid bool
-	isValid, err := validatHeader(fileContents[0])
+	isValid, err := validateHeader(fileContents[0])
 	if !isValid {
 		return PBM{}, err
 	}
-	lineIndex, err := validatComment(fileContents)
+	lineIndex, err := validateComment(fileContents)
 	if err != nil {
 		return PBM{}, err
 	}
-	isValid = validatSize(fileContents[lineIndex])
+	isValid = validateSize(fileContents[lineIndex])
 	if !isValid {
 		return PBM{}, errors.New("file size is not correct")
 	}
@@ -32,14 +32,14 @@ func fetchPBM(fileContents []string) (PBM, error) {
 	return pbm, nil
 }
 
-func validatHeader(fileHeader string) (bool, error) {
+func validateHeader(fileHeader string) (bool, error) {
 	if fileHeader != header {
 		return false, errors.New("file header is not correct")
 	}
 	return true, nil
 }
 
-func validatComment(fileContents []string) (int, error) {
+func validateComment(fileContents []string) (int, error) {
 	lineIndex := 1
 	for len(fileContents[lineIndex]) > 0 && fileContents[lineIndex][0] == '#' {
 		lineIndex++
@@ -51,7 +51,7 @@ func validatComment(fileContents []string) (int, error) {
 	return lineIndex, nil
 }
 
-func validatSize(size string) bool {
+func validateSize(size string) bool {
 	match, _ := regexp.MatchString(`^[1-9][0-9]*\s{1,}[1-9][0-9]*$`, size)
 
 	return match
