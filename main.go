@@ -129,11 +129,11 @@ func fetchPBM(fileContents []string) (PBM, error) {
 	}
 	wAndHArr := getWAndH(fileContents[lineIndex])
 	lineIndex++
-	pixels, succeed := compressPixels(fileContents, lineIndex, wAndHArr)
+	pixelsInfo, succeed := compressPixels(fileContents, lineIndex, wAndHArr)
 	if !succeed {
-		return PBM{}, errors.New("file pixels format is not correct")
+		return PBM{}, errors.New(pixelsInfo)
 	}
-	pbm := PBM{wAndHArr[0], wAndHArr[1], pixels}
+	pbm := PBM{wAndHArr[0], wAndHArr[1], pixelsInfo}
 
 	return pbm, nil
 }
@@ -180,13 +180,16 @@ func compressPixels(fileContents []string, lineIndex int, wAndHArr []int) (strin
 	pixels = strings.ReplaceAll(pixels, " ", "")
 	requiredPixelsLen := wAndHArr[0] * wAndHArr[1]
 
-	pattern := fmt.Sprintf("^[0,1]{%d,}$", requiredPixelsLen)
-	match, _ := regexp.MatchString(pattern, pixels)
-	if match {
-		pixels = pixels[0:requiredPixelsLen]
+	if len(pixels) < requiredPixelsLen {
+		return "pixel length is smaller than the size defined", false
+	}
+	for _, c := range pixels {
+		if c != '0' && c != '1' {
+			return "pixels contain illegal characters", false
+		}
 	}
 
-	return pixels, match
+	return pixels, true
 }
 
 func fetchFileContents(oriFileName string) []string {
