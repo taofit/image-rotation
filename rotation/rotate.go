@@ -1,7 +1,6 @@
 package rotation
 
 import (
-	"fmt"
 	"log"
 	"math"
 	"sync"
@@ -32,9 +31,7 @@ func rotate(pbm PBM, angle float64) [][]byte {
 	sine := getSine(angle)
 	cosine := getCosine(angle)
 
-	rstWidth, rstHeight, minX, minY, maxX, maxY := getRstPixelsInfo(sine, cosine, oriWidth, oriHeight)
-
-	fmt.Println(rstWidth, rstHeight, minX, minY, maxX, maxY)
+	rstWidth, rstHeight, minX, minY := getRstPixelsInfo(sine, cosine, oriWidth, oriHeight)
 	rstPixelsArr := initRstPixelsArr(rstHeight, rstWidth)
 
 	var wg sync.WaitGroup
@@ -53,14 +50,10 @@ func rotate(pbm PBM, angle float64) [][]byte {
 	}
 	wg.Wait()
 
-	for _, line := range rstPixelsArr {
-		fmt.Println(string(line))
-	}
-
 	return rstPixelsArr
 }
 
-func getRstPixelsInfo(sine, cosine float64, oriWidth, oriHeight int) (int, int, float64, float64, float64, float64) {
+func getRstPixelsInfo(sine, cosine float64, oriWidth, oriHeight int) (int, int, float64, float64) {
 	p1x := -float64(oriWidth) * sine
 	p1y := float64(oriWidth) * cosine
 	p2x := (float64(oriHeight) * cosine) - (float64(oriWidth) * sine)
@@ -76,7 +69,7 @@ func getRstPixelsInfo(sine, cosine float64, oriWidth, oriHeight int) (int, int, 
 	rstHeight := int(math.Ceil(maxX - minX))
 	rstWidth := int(math.Ceil(maxY - minY))
 
-	return rstWidth, rstHeight, minX, minY, maxX, maxY
+	return rstWidth, rstHeight, minX, minY
 }
 
 func getSine(angle float64) float64 {

@@ -7,7 +7,8 @@ import (
 )
 
 func writeToFile(rstPixelsArr [][]byte) {
-	f, err := os.Create("rst-bitmap.pbm")
+	resultantFile := "rst-bitmap.pbm"
+	f, err := os.Create(resultantFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -15,24 +16,22 @@ func writeToFile(rstPixelsArr [][]byte) {
 	width := len(rstPixelsArr[0])
 	height := len(rstPixelsArr)
 
-	f.WriteString(header + "\n")
-
 	comment := fmt.Sprintln(`# This is a rotated bitmap`)
-	f.WriteString(comment)
+	size := fmt.Sprintf("%d %d\n", width, height)
+	_, err = f.WriteString(header + "\n" + comment + size)
 
-	// write size
-	_, err = f.WriteString(fmt.Sprintf("%d %d\n", width, height))
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	writePixels(f, rstPixelsArr)
-	fmt.Println("done ....")
+	fmt.Printf("Done! rotated image is saved in %s", resultantFile)
 }
 
 func writePixels(f *os.File, rstPixelsArr [][]byte) {
 	var newline byte = 10
 	var emptySpace byte = 32
+	var rstPixels []byte
 
 	for _, pixelsLine := range rstPixelsArr {
 		rstPixelsLine := []byte{}
@@ -41,6 +40,7 @@ func writePixels(f *os.File, rstPixelsArr [][]byte) {
 		}
 		rstPixelsLine = rstPixelsLine[:len(rstPixelsLine)-1]
 		rstPixelsLine = append(rstPixelsLine, newline)
-		f.Write(rstPixelsLine)
+		rstPixels = append(rstPixels, rstPixelsLine...)
 	}
+	f.Write(rstPixels)
 }
