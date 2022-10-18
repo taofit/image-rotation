@@ -37,29 +37,19 @@ func rotate(pbm PBM, angle float64) [][]byte {
 	fmt.Println(rstWidth, rstHeight, minX, minY, maxX, maxY)
 	rstPixelsArr := initRstPixelsArr(rstHeight, rstWidth)
 
-	// for x := 0; x < rstHeight; x++ {
-	// 	for y := 0; y < rstWidth; y++ {
-	// 		oriX := int(((float64(x) + minX) * cosine) + ((float64(y) + minY) * sine))
-	// 		oriY := int(((float64(y) + minY) * cosine) - ((float64(x) + minX) * sine))
-	// 		if (oriX >= 0 && oriX < oriHeight) && (oriY >= 0 && oriY < oriWidth) {
-	// 			rstPixelsArr[x][y] = oriPixelsArr[oriX][oriY]
-	// 		}
-	// 	}
-	// }
-
 	var wg sync.WaitGroup
 	for x := 0; x < rstHeight; x++ {
-		for y := 0; y < rstWidth; y++ {
-			wg.Add(1)
-			go func(x, y int) {
+		wg.Add(1)
+		go func(x int) {
+			for y := 0; y < rstWidth; y++ {
 				oriX := int(((float64(x) + minX) * cosine) + ((float64(y) + minY) * sine))
 				oriY := int(((float64(y) + minY) * cosine) - ((float64(x) + minX) * sine))
 				if (oriX >= 0 && oriX < oriHeight) && (oriY >= 0 && oriY < oriWidth) {
 					rstPixelsArr[x][y] = oriPixelsArr[oriX][oriY]
 				}
-				wg.Done()
-			}(x, y)
-		}
+			}
+			wg.Done()
+		}(x)
 	}
 	wg.Wait()
 
