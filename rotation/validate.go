@@ -45,7 +45,7 @@ func validateComment(fileContents []string) (int, error) {
 		lineIndex++
 	}
 	if lineIndex == 1 {
-		return lineIndex, errors.New("not comment in the file")
+		return lineIndex, errors.New("no comment section in the file")
 	}
 
 	return lineIndex, nil
