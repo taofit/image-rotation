@@ -2,9 +2,11 @@
 
 ## Project description
 
-The purpose of this project is to rotate a PBM format image in any anger.
+The purpose of this project is to rotate a PBM format image in any angle.
+
 There is a link that explains what a PBM format image is.
-Basically, a simple example of the PBM format is as follows (there is a newline character at the end of each line): 
+Basically, a simple example of the PBM format is as follows (there is a newline character at the end of each line):
+
 ```
 P1
 # This is an example bitmap of the letter "J"
@@ -21,15 +23,19 @@ P1
 0 0 0 0 0 0
 ```
 
-It is not required that pixels are nicely lined up, the format ignores whitespaces and linefeeds in the data section.
+It is not required that pixels are nicely lined up, the format ignores white spaces and line feeds in the data section.
+The string P1 identifies the file format. The hash sign introduces a comment. The next two numbers give the width and the height. Then follows the matrix with the pixel values (in the monochrome case here, only zeros and ones).
+
 The following displays the same image:
+
 ```
 P1
 # This is an example bitmap of the letter "J"
 6 10
 000010000010000010000010000010000010100010011100000000000000
 ```
-The program is to generate a new sequence of 0 and 1 after it turns certain degree.
+
+The program is to generate a new sequence of 0 and 1 in the matrix part of the resultant BPM image along with a new size, after it rotates certain degree.
 
 ## Run the program
 
@@ -47,7 +53,7 @@ Under rotation folder, run command: `go test -bench=.` When writing pixels to th
 The calculation of the rotated pixels are based on the formala below:
 
 newX = x cos(@) + y sin(@)  
-newY = -x sin(@) + y cos(@)  
+newY = -x sin(@) + y cos(@)
 
 Some reference: https://datagenetics.com/blog/august32013/index.html  
 The code should be self-explanatory
